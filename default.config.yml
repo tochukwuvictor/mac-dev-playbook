@@ -1,100 +1,221 @@
 ---
-downloads: ~/.ansible-downloads/
+###############################################################################
+# Variables for embedded playbook tasks
+###############################################################################
 
-configure_dotfiles: true
-configure_terminal: true
-configure_osx: true
+ansible_become_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          65323330636365393330663761346463353034366239326262613330653333623763393961613266
+          6666346631396266616235613666666166326438643432360a333431356461633130333462376663
+          63666161623261336430316361363438613234613862316161636233306230346234356563383262
+          3761343238343631390a643066363839343365313861366464316333636463646231356236376466
+          37396533666436333262373232306266616137613133316630656530613065653762
+arm_processor: "{{ 'arm' in ansible_facts.kernel_version.lower() }}"
 
-configure_sudoers: false
-sudoers_custom_config: ''
-# Example:
-# sudoers_custom_config: |
-#   # Allow users in admin group to use sudo with no password.
-#   %admin ALL=(ALL) NOPASSWD: ALL
+downloads: ~/.ansible/usr/downloads/
 
-dotfiles_repo: https://github.com/geerlingguy/dotfiles.git
-dotfiles_repo_accept_hostkey: true
-dotfiles_repo_local_destination: ~/Development/GitHub/dotfiles
-dotfiles_files:
-  - .zshrc
-  - .gitignore
-  - .inputrc
-  - .osx
-  - .vimrc
+enable:
+  install_from_asdf: true
+  install_from_homebrew: true
+  install_from_mac_app_store: true
+  restore_from_archive: true
+  configure_terminal: true
+  configure_osx: true
+  home_config_file_distribution: true
 
-homebrew_installed_packages:
-  # - ansible # Installed via Pip.
-  - autoconf
-  - bash-completion
-  - doxygen
-  - gettext
-  - gifsicle
-  - git
-  - github/gh/gh
-  - go
-  - gpg
-  - httpie
-  - iperf
-  - libevent
-  - sqlite
-  - mcrypt
-  - nmap
-  - node
-  - nvm
-  - php
-  - ssh-copy-id
-  - cowsay
-  - readline
-  - openssl
-  - pv
-  - wget
-  - wrk
-
-homebrew_taps:
-  - homebrew/core
-  - homebrew/cask
-
-homebrew_cask_appdir: /Applications
-homebrew_cask_apps:
-  - chromedriver
-  - docker
-  - dropbox
-  - firefox
-  - google-chrome
-  - handbrake
-  - licecap
-  - sequel-pro
-  - slack
-  - sublime-text
-  - transmit
-  - vagrant
-
-# See `geerlingguy.mas` role documentation for usage instructions.
-mas_installed_apps: []
-mas_email: ""
-mas_password: ""
+config_files:
+  repo: https://github.com/tochukwuvictor/home-config-files
+  repo_dest: "{{ downloads }}"
+  repo_version: HEAD
 
 osx_script: "~/.osx --no-restart"
 
 # Install packages from other package managers.
 # Note: You are responsible for making sure the required package managers are
 # installed, eg. through homebrew.
-composer_packages: []
-# - name: drush
-#   state: present # present/absent, default: present
-#   version: "^8.1" # default: N/A
-gem_packages: []
-# - name: bundler
-#   state: present # present/absent/latest, default: present
-#   version: "~> 1.15.1" # default: N/A
-npm_packages: []
-# - name: webpack
-#   state: present # present/absent/latest, default: present
-#   version: "^2.6" # default: N/A
-pip_packages: []
-# - name: mkdocs
-#   state: present # present/absent/latest, default: present
-#   version: "0.16.3" # default: N/A
 
-# Glob pattern to ansible task files to run after all other tasks are finished.
-post_provision_tasks: []
+extra_packages:
+  composer: []
+  # - name: drush
+  #   state: present # present/absent, default: present
+  #   version: "^8.1" # default: N/A
+  gem: []
+  # - name: bundler
+  #   state: present # present/absent/latest, default: present
+  #   version: "~> 1.15.1" # default: N/A
+  git:
+    - repo: "https://github.com/junegunn/fzf.git"
+      dest: "{{ asdf_user_home }}/.fzf"
+      depth: "1"
+      version: HEAD
+      post_install_cmd: "{{ asdf_user_home }}/.fzf/install --all --key-bindings --completion --no-update-rc" 
+  npm: []
+  # - name: webpack
+  #   state: present # present/absent/latest, default: present
+  #   version: "^2.6" # default: N/A
+  pip: []
+  # - name: mkdocs
+  #   state: present # present/absent/latest, default: present
+  #   version: "0.16.3" # default: N/A
+
+###############################################################################
+# Variables for tochukwuvictor.asdf role
+###############################################################################
+
+asdf_version: "v0.8.0"
+asdf_plugin_dependencies:
+  - autoconf # Erlang
+  - unzip # Elixir
+  - wxmac # Erlang
+
+asdf_plugins:
+  - name: "awscli"
+    versions:
+      - latest
+  - name: "elixir"
+    versions:
+      - 1.11.3
+    global: 1.11.3
+  - name: "erlang"
+    versions:
+      - 23.2
+    global: 23.2
+  - name: "github-cli"
+    versions:
+      - latest
+  - name: "helm"
+    versions:
+      - latest
+  - name: "k9s"
+    versions:
+      - latest
+  - name: "kind"
+    versions:
+      - latest
+  - name: "kube-capacity"
+    versions:
+      - latest
+  - name: "kubectl"
+    versions:
+      - latest
+  - name: "kubectx"
+    versions:
+      - latest
+  - name: "kustomize"
+    versions:
+      - latest
+  - name: "minikube"
+    versions:
+      - latest
+  - name: "opa"
+    versions:
+      - latest
+  - name: "python"
+    versions:
+      - 3.9.2
+    global: 3.9.2
+  - name: "rust"
+    versions:
+      - 1.50.0
+    global: 1.50.0
+  - name: "sops"
+    versions:
+      - latest
+    global: latest
+  - name: "terraform"
+    versions:
+      - latest
+      - 0.13.6
+      - 0.12.30
+    global: latest
+  - name: "yq"
+    versions:
+      - latest
+      - 3.4.1
+    global: 3.4.1
+
+###############################################################################
+# Variables for tochukwuvictor.filesystem-archive role
+###############################################################################
+
+directory_to_extract_from_archive: /home
+extract_archive: no
+extraction_destination: '~/archives'
+path_to_archive: '/Volumes/<your_external_drive_here>/<path_to_the_gzipped_tarball>'
+transfer_archive: yes
+transfer_instructions:
+  prepend:
+    - dest: "{{ ansible_facts.user_dir }}/.zsh_history"
+      src_relative_to_extraction_dest: "home/{{ ansible_facts.user_id }}/.zsh_history"
+  rsync:
+    - dest: "{{ ansible_facts.user_dir }}/.ssh"
+      src_relative_to_extraction_dest: "home/{{ ansible_facts.user_id }}/.ssh/"
+
+###############################################################################
+# Variables for geerlingguy.homebrew role
+###############################################################################
+
+homebrew_prefix: "{{ '/opt/homebrew' if arm_processor else '/usr/local' }}"
+homebrew_install_path: "{{ homebrew_prefix if arm_processor else homebrew_prefix+'/Homebrew' }}"
+homebrew_brew_bin_path: "{{ homebrew_prefix }}/bin"
+
+homebrew_installed_packages:
+  - autoconf
+  - bash-completion
+  - bitwarden-cli
+  - cowsay
+  - dust
+  - eksctl
+  - fd
+  - fish
+  - fzf
+  - git
+  - gnu-tar
+  - golang
+  - gpg
+  - php
+  - readline
+  - ripgrep
+  - shfmt
+  - ssh-copy-id
+  - starship
+  - terragrunt
+  - tmux
+  - openssl
+  - watch
+  - wget
+  - zoxide
+
+homebrew_taps:
+  - homebrew/core
+  - homebrew/cask
+  - homebrew/cask-fonts
+
+homebrew_cask_appdir: /Applications
+homebrew_cask_apps:
+  - name: alacritty
+    install_options: 'no-quarantine'
+  - bitwarden
+  - chromedriver
+  - copyq
+  - discord
+  - docker
+  - firefox
+  - font-hack-nerd-font
+  - google-chrome
+  - handbrake
+  - licecap
+  - slack
+  - spotify
+  - transmit
+  - visual-studio-code
+  - zoom
+
+###############################################################################
+# Variables for geerlingguy.mas role
+###############################################################################
+
+# See `geerlingguy.mas` role documentation for usage instructions.
+mas_installed_apps: []
+mas_email: ""
+mas_password: ""
