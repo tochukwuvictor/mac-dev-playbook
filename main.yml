@@ -1,5 +1,6 @@
 ---
 - hosts: all
+  gather_facts: true
 
   vars_files:
     - default.config.yml
@@ -10,35 +11,54 @@
       with_fileglob:
         - "{{ playbook_dir }}/config.yml"
       tags: ['always']
+    - name: Determine if host is using an M1 chip
+      set_fact:
+        arm_processor: "{{ true if 'arm' in ansible_facts.kernel_version.lower() else false }}"
+    - name: Print all available facts
+      ansible.builtin.debug:
+        var: arm_processor
+    - name: Install Rosetta 2 emulator if using an M1 chip
+      ansible.builtin.script: "{{ playbook_dir }}/files/install_rosetta_on_apple_silicon.sh"
+      register: rosetta_install_script_output
+      when: arm_processor
+    - name: Show output of previous command
+      ansible.builtin.debug:
+        var: rosetta_install_script_output
 
   roles:
+    # Perform installations
+    - role: tochukwuvictor.asdf
+      tags: ['asdf']
+      when: enable.install_from_asdf
     - role: geerlingguy.homebrew
-      tags: ['homebrew']
-    - role: geerlingguy.dotfiles
-      when: configure_dotfiles
-      tags: ['dotfiles']
+      tags: ['brew', 'homebrew']
+      when: enable.install_from_homebrew
     - role: geerlingguy.mas
-      when: mas_installed_apps
+      when: enable.install_from_mac_app_store
       tags: ['mas']
+    - role: tochukwuvictor.terminal
+      tags: ['terminal', 'tty']
+      when: enable.configure_terminal
+
+    # Restore from archive
+    - role: tochukwuvictor.filesystem-archive
+      tags: ['fs-archive']
+      when: enable.restore_from_archive
 
   tasks:
     - include_tasks: tasks/ansible-setup.yml
 
-    - include_tasks: tasks/sudoers.yml
-      when: configure_sudoers
+    - import_tasks: tasks/distribute-home-config-files.yml
+      when: enable.home_config_file_distribution
+      tags: ['distribute-configs']
 
-    - include_tasks: tasks/terminal.yml
-      when: configure_terminal
+  #   - include_tasks: tasks/editor.yml
+  #     when: configure_editor
+  #     tags: ['editor']
 
-    - include_tasks: tasks/osx.yml
-      when: configure_osx
-      tags: ['osx']
+  #   - include_tasks: tasks/osx.yml
+  #     when: configure_osx
+  #     tags: ['osx']
 
-    - include_tasks: tasks/extra-packages.yml
+    - import_tasks: tasks/extra-packages.yml
       tags: ['extra-packages']
-
-    - name: Run configured post-provision ansible task files.
-      include_tasks: "{{ outer_item }}"
-      loop_control:
-        loop_var: outer_item
-      with_fileglob: "{{ post_provision_tasks|default(omit) }}"
