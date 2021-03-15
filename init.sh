@@ -34,7 +34,7 @@ if [[ "$(uname -a)" == *"arm"* ]]; then
   brew_bin_location="/opt/homebrew/bin/brew"
 fi
 
-if ! $brew_bin_location; then
+if ! $brew_bin_location --help > /dev/null; then
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" | \
         tee installation_temp_file
     eval "$(cat installation_temp_file | grep -A2 "Add Homebrew to your PATH" | tail -n+2)"
@@ -45,6 +45,11 @@ fi
 brew install python@"${PYTHON_VERSION}"
 
 # Install ansible
+if ! python3 -m pip --help > /dev/null; then
+  curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+  python3 get-pip.py
+  rm get-pip.py
+fi
 python3 -m pip install --user ansible
 python3 -m pip install --user paramiko
 export PATH="${HOME}/Library/Python/${PYTHON_VERSION}/bin:${PATH}"
