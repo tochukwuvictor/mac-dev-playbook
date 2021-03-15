@@ -1,0 +1,10 @@
+---
+directory_to_extract_from_archive: /home
+external_drive: no
+extract_archive: no
+extraction_destination: '~/archives'
+path_to_archive: ''
+transfer_archive: no
+transfer_instructions:
+  prepend: []
+  rsync: []

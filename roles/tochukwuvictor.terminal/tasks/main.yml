@@ -1,0 +1,18 @@
+---
+- name: Brew installations
+  include_tasks: brew-installs.yml
+  when: terminal_homebrew_installs
+
+- name: Install fish
+  include_tasks: fish.yml
+  when: '"fish" in shells_to_install'
+
+- name: Install zsh
+  include_tasks: zsh.yml
+  when: '"zsh" in shells_to_install'
+
+- name: Set default shell
+  ansible.builtin.user:
+    name: "{{ ansible_facts.user_id }}"
+    shell: "{{ default_shell }}"
+  become: true

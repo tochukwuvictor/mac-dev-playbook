@@ -1,0 +1,26 @@
+---
+- name: Install required homebrew taps
+  homebrew_tap:
+    tap: '{{ item.name | default(item) }}'
+    url: '{{ item.url | default(omit) }}'
+    state: present
+  loop: "{{ terminal_homebrew_taps }}"
+
+- name: Install required homebrew casks
+  homebrew_cask:
+    name: "{{ item.name | default(item) }}"
+    state: present
+    install_options: "no-quarantine"
+    accept_external_apps: yes
+  loop: "{{ terminal_homebrew_cask_apps }}"
+  notify:
+    - Clear homebrew cache
+
+- name: Ensure configured homebrew packages are installed.
+  homebrew:
+    name: "{{ item.name | default(item) }}"
+    install_options: "{{ item.install_options | default(omit) }}"
+    state: present
+  loop: "{{ terminal_homebrew_installed_packages }}"
+  notify:
+    - Clear homebrew cache

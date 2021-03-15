@@ -1,0 +1,21 @@
+---
+- name: Install zsh
+  community.general.homebrew:
+    name: zsh
+    state: present
+  notify:
+    - Clear homebrew cache
+
+- name: Install oh-my-zsh
+  ansible.builtin.shell:
+    cmd: |
+      curl -L https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh > zsh_install
+      sh zsh_install --skip-chsh --unattended --keep-zshrc
+      rm zsh_install
+    warn: false
+  register: zsh_install
+  when: install_oh_my_shell_managers
+
+- name: Show output of previous command
+  ansible.builtin.debug:
+    var: zsh_install

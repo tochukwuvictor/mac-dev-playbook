@@ -1,0 +1,57 @@
+---
+- name: Install plugin dependencies with apt
+  become: True
+  ansible.builtin.apt:
+    name: "{{ asdf_plugin_dependencies }}"
+    install_recommends: no
+    cache_valid_time: "{{ apt_cache_valid_time }}"
+  retries: "{{ remote_package_retries }}"
+  register: apt_result
+  until: apt_result is succeeded
+  when: ansible_facts.os_family == "Debian"
+
+- name: Install plugin dependencies with homebrew
+  community.general.homebrew:
+    name: "{{ asdf_plugin_dependencies }}"
+    state: present
+  retries: "{{ remote_package_retries }}"
+  notify:
+    - Clear homebrew cache
+  when: ansible_facts.os_family == "Darwin"
+
+- name: Install plugin dependencies with yum
+  become: True
+  ansible.builtin.yum:
+    name: "{{ asdf_plugin_dependencies }}"
+  retries: "{{ remote_package_retries }}"
+  register: yum_result
+  until: yum_result is succeeded
+  when: ansible_facts.os_family == "RedHat"
+
+- name: Stat asdf directory
+  ansible.builtin.stat:
+    path: "{{ asdf_user_home }}/.asdf"
+  register: asdf_stat
+
+- name: Install asdf
+  ansible.builtin.git:
+    repo: "https://github.com/asdf-vm/asdf.git"
+    dest: "{{ asdf_user_home }}/.asdf"
+    clone: "{{ not asdf_stat.stat.exists }}"
+    version: "{{ asdf_version }}"
+  become: true
+  become_user: "{{ asdf_user }}"
+
+- name: Add asdf script sourcing to commonly used shells
+  ansible.builtin.lineinfile:
+    path: "{{ asdf_user_home }}/{{ item.relative_path }}"
+    regexp: 
+    line: "[ -f {{ item.line | default('~/.asdf/asdf.sh') }} ] && . {{ item.line | default('~/.asdf/asdf.sh') }}"
+    create: yes
+  with_items: 
+    - relative_path: .bashrc
+    - relative_path: .zshrc
+    - relative_path: .config/fish/config.fish
+      line: '~/.asdf/asdf.fish'
+    - relative_path: .config/fish/config.fish
+      line: '~/.asdf/completions/asdf.fish'

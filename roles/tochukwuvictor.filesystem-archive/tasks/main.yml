@@ -1,0 +1,11 @@
+---
+- name: Install dependencies
+  include_tasks: install_deps.yml
+
+- name: Extract archive
+  include_tasks: extract.yml
+  when: extract_archive
+
+- name: Transfer archive
+  include_tasks: transfer.yml
+  when: transfer_archive

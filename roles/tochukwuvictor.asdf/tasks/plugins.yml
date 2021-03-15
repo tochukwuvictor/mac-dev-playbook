@@ -1,0 +1,47 @@
+---
+- name: "install plugins"
+  command: "bash -lc '. $HOME/.asdf/asdf.sh && asdf plugin-add {{ item.name }} {{ item.git_url | default() }}'"
+  args:
+    creates: "{{ asdf_user_home }}/.asdf/plugins/{{ item.name }}"
+    chdir: "{{ asdf_user_home }}"
+  with_items: "{{ asdf_plugins }}"
+  when: asdf_plugins|length > 0
+  become: True
+  become_user: "{{ asdf_user }}"
+  ignore_errors: True
+
+- name: "install versions"
+  command: "bash -lc '. $HOME/.asdf/asdf.sh && asdf install {{ item.0.name }} {{ item.1 }}'"
+  args:
+    creates: "{{ asdf_user_home }}/.asdf/installs/{{ item.0.name }}/{{ item.1 }}"
+    chdir: "{{ asdf_user_home }}"
+  with_subelements:
+    - "{{ asdf_plugins }}"
+    - versions
+    - flags:
+        skip_missing: True
+  when: asdf_plugins|length > 0
+  become: True
+  become_user: "{{ asdf_user }}"
+
+- name: "set global app versions"
+  ansible.builtin.lineinfile:
+    path: "{{ asdf_user_home }}/.tool-versions"
+    regexp: "^{{ item.name }}"
+    line: "{{ item.name }} {{ item.global | default(item.versions[0]) }}"
+    create: yes
+  when: item.versions is defined
+  with_items: "{{ asdf_plugins }}"
+  become: True
+  become_user: "{{ asdf_user }}"
+
+- name: "replace 'latest' with latest package version"
+  command: "bash -lc '. $HOME/.asdf/asdf.sh && v=$(asdf list {{ item.name }} | tail -n1 | xargs) && sed -i -e \"s/{{ item.name }} latest/{{ item.name }} $v/\" .tool-versions'"
+  args:
+    chdir: "{{ asdf_user_home }}"
+  when:
+    - item.versions is defined
+    - (item.global is not defined and item.versions[0] == "latest") or (item.global is defined and item.global == "latest")
+  with_items: "{{ asdf_plugins }}"
+  become: True
+  become_user: "{{ asdf_user }}"

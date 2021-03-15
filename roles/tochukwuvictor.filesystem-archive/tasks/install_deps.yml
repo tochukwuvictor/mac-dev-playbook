@@ -1,0 +1,9 @@
+---
+- name: Install plugin dependencies with homebrew
+  community.general.homebrew:
+    name:
+      - gnu-tar
+    state: present
+  notify:
+    - Clear homebrew cache
+  when: ansible_facts.os_family == "Darwin"

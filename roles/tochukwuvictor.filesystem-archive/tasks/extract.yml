@@ -1,0 +1,51 @@
+---
+- name: Get file info about archive
+  ansible.builtin.stat:
+    path: "{{ path_to_archive }}"
+    get_attributes: no
+    get_checksum: no
+    get_mime: no
+  register: archive_stat
+
+- name: Fail if archive doesn't exist
+  ansible.builtin.fail:
+    msg: "path_to_archive '{{ path_to_archive }}' doesn't exist"
+  when: not archive_stat.stat.exists
+
+- name: Ensure archive destination exists
+  ansible.builtin.file:
+    path: "{{ extraction_destination }}"
+    state: directory
+
+# - name: Fail if archive is larger than destination disk free
+#   ansible.builtin.fail:
+#     msg: "Archive size {{ }} is too large for destination disk free {{ }}"
+#   when:
+#     - external_drive
+
+- name: Properly format directory_to_extract_from_archive
+  ansible.builtin.set_fact:
+    directory_to_extract_from_archive: "{{ directory_to_extract_from_archive | regex_replace('^\\/', '')  | regex_replace('\\/$', '') }}/"
+
+- name: Get info about directory_to_extract_from_archive
+  ansible.builtin.stat:
+    path: "{{ extraction_destination }}/{{ directory_to_extract_from_archive }}"
+    get_attributes: no
+    get_checksum: no
+    get_mime: no
+  register: dir_to_extract_stat
+
+- name: Evetually make this ask user if they'd like to override the existing dir
+  ansible.builtin.debug:
+    msg: "{{ directory_to_extract_from_archive }} already exists in the {{ extraction_destination }} directory!"
+  when: dir_to_extract_stat.stat.exists
+
+- name: Extract directory from archive to destination
+  ansible.builtin.unarchive:
+    src: "{{ path_to_archive }}"
+    dest: "{{ extraction_destination }}"
+    remote_src: "{{ external_drive }}"
+    extra_opts:
+      - "{{ directory_to_extract_from_archive }}"
+  ignore_errors: yes
+  when: not dir_to_extract_stat.stat.exists

@@ -1,0 +1,16 @@
+---
+- name: Prepend content from specified files in archive into their non-archived counterparts
+  ansible.builtin.blockinfile:
+    backup: yes
+    content: "{{ lookup( 'file', extraction_destination + '/' + item.src_relative_to_extraction_dest ) }}"
+    path: "{{ item.dest }}"
+    insertbefore: BOF
+  with_items: "{{ transfer_instructions.prepend }}"
+
+- name: Rsync content from specified files in archive to their non-archived counterparts
+  ansible.posix.synchronize:
+    src: "{{ extraction_destination + '/' + item.src_relative_to_extraction_dest }}"
+    dest: "{{ item.dest }}"
+    rsync_opts:
+      - --ignore-existing
+  with_items: "{{ transfer_instructions.rsync }}"

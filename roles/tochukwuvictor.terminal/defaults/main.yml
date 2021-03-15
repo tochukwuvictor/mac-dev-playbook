@@ -1,0 +1,25 @@
+---
+default_shell: "{{ homebrew_brew_bin_path }}/fish"
+default_ansible_shell_executable: /bin/bash
+
+homebrew_prefix: /usr/local
+homebrew_brew_bin_path: "{{ homebrew_prefix }}/bin"
+
+install_oh_my_shell_managers: yes
+
+shells_to_install:
+  - fish
+  - zsh
+
+terminal_homebrew_installs: yes
+terminal_homebrew_taps:
+  - homebrew/core
+  - homebrew/cask
+  - homebrew/cask-fonts
+terminal_homebrew_cask_appdir: /Applications
+terminal_homebrew_cask_apps:
+  - name: alacritty
+    install_options: 'no-quarantine'
+  - font-hack-nerd-font
+terminal_homebrew_installed_packages:
+  - starship

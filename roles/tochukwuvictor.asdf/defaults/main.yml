@@ -1,0 +1,17 @@
+---
+# defaults file for asdf
+
+asdf_plugins: []
+# asdf_plugins:
+#   - name: "erlang"
+#     versions:
+#       - 18.3
+#       - 20.1
+#     global: 20.1
+
+asdf_user: "{{ ansible_facts.user_id }}"
+asdf_user_home: "{{ ansible_facts.user_dir }}"
+asdf_version: "v0.6.2"
+
+apt_cache_valid_time: 86400
+remote_package_retries: 5

@@ -1,0 +1,22 @@
+---
+- name: Install fish
+  community.general.homebrew:
+    name: fish
+    state: present
+  notify:
+    - Clear homebrew cache
+
+- name: Install oh-my-fish
+  ansible.builtin.shell:
+    cmd: |
+      curl -L https://get.oh-my.fish > fish_install
+      "{{ homebrew_brew_bin_path }}"/fish fish_install --noninteractive
+      rm fish_install
+    executable: "{{ default_ansible_shell_executable }}"
+    warn: false
+  register: fish_install
+  when: install_oh_my_shell_managers
+
+- name: Show output of previous command
+  ansible.builtin.debug:
+    var: fish_install
