@@ -1,7 +1,5 @@
 # MacOS Workstation Setup Ansible Playbook
 
-[![CI][badge-gh-actions]][link-gh-actions]
-
 This playbook started as a fork of [Jeff Geerling's mac-dev-playbook](https://github.com/geerlingguy/mac-dev-playbook). At it's core the playbook still follows the same format as Jeff's. The notable changes I made are as follows:
 
   - Add support for Macs running on Apple silicon
