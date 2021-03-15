@@ -1,6 +1,8 @@
 *.vagrant
 .DS_Store
 *.retry
-roles*
+roles/elliotweiser*
+roles/geerlingguy*
 config.yml
 facts.yml
+ansible-vault.pass
