@@ -1,34 +1,65 @@
 ---
+- name: Stat git package directories
+  ansible.builtin.stat:
+    path: "{{ item.dest }}"
+  register: git_pkg_stats
+  with_items: "{{ extra_packages.git }}"
+
+- name: Clone package git repos
+  ansible.builtin.git:
+    repo: "{{ item.repo }}"
+    dest: "{{ item.dest }}"
+    clone: "{{ not git_pkg_stats.results[ansible_loop.index0].stat.exists }}"
+    depth: "{{ item.depth | default(omit) }}"
+    version: "{{ item.version | default(omit) }}"
+  become: true
+  become_user: "{{ asdf_user }}"
+  loop: "{{ extra_packages.git }}"
+  loop_control:
+    extended: yes
+
+- name: Run post git clone command(s)
+  ansible.builtin.shell: "{{ item.post_install_cmd | default('echo No post-install commands to run') }}"
+  register: git_pkg_cmds
+  with_items: "{{ extra_packages.git }}"
+
+- name: Show output of previous command
+  ansible.builtin.debug:
+    msg: "{{ git_pkg_cmds.results[ansible_loop.index0] }}"
+  loop: "{{ extra_packages.git }}"
+  loop_control:
+    extended: yes
+
 - name: Install global Composer packages.
   composer:
     command: "{{ (item.state | default('present') == 'absent') | ternary('remove', 'require') }}"
     arguments: "{{ item.name | default(item) }} {{ item.version | default('@stable') }}"
     # Ansible 2.4 supports `global_command` making `working_dir` optional.
     working_dir: "{{ lookup('env', 'COMPOSER_HOME') | default('~/.composer', true) }}"
-  with_items: "{{ composer_packages }}"
+  with_items: "{{ extra_packages.composer }}"
 
 - name: Install global NPM packages.
   npm:
     name: "{{ item.name | default(item) }}"
-    state: "{{ item.state | default('present') }}"
+    state: present
     version: "{{ item.version | default(omit) }}"
     global: true
     executable: "{{ item.executable | default(omit) }}"
-  with_items: "{{ npm_packages }}"
+  with_items: "{{ extra_packages.npm }}"
 
 - name: Install global Pip packages.
   pip:
     name: "{{ item.name | default(item) }}"
-    state: "{{ item.state | default('present') }}"
+    state: present
     version: "{{ item.version | default(omit) }}"
     executable: "{{ item.executable | default(omit) }}"
-  with_items: "{{ pip_packages }}"
+  with_items: "{{ extra_packages.pip }}"
 
 - name: Install global Ruby gems.
   gem:
     name: "{{ item.name | default(item) }}"
-    state: "{{ item.state | default('present') }}"
+    state: present
     version: "{{ item.version | default(omit) }}"
     user_install: false
     executable: "{{ item.executable | default(omit) }}"
-  with_items: "{{ gem_packages }}"
+  with_items: "{{ extra_packages.gem }}"
