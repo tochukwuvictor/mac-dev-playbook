@@ -98,9 +98,6 @@ asdf_plugins:
   - name: "kubectl"
     versions:
       - latest
-  - name: "kubectx"
-    versions:
-      - latest
   - name: "kustomize"
     versions:
       - latest
@@ -127,7 +124,7 @@ asdf_plugins:
       - latest
       - 0.13.6
       - 0.12.30
-    global: latest
+    global: 0.12.30
   - name: "yq"
     versions:
       - latest
@@ -141,12 +138,10 @@ asdf_plugins:
 directory_to_extract_from_archive: /home
 extract_archive: no
 extraction_destination: '~/archives'
-path_to_archive: '/Volumes/<your_external_drive_here>/<path_to_the_gzipped_tarball>'
+path_to_archive: '/Volumes/LaCie/home/tochukwuvictor/archived-system-backups/1615607321_XPS-13-9380-0338_backup.tar.gz'
 transfer_archive: yes
 transfer_instructions:
-  prepend:
-    - dest: "{{ ansible_facts.user_dir }}/.zsh_history"
-      src_relative_to_extraction_dest: "home/{{ ansible_facts.user_id }}/.zsh_history"
+  prepend: []
   rsync:
     - dest: "{{ ansible_facts.user_dir }}/.ssh"
       src_relative_to_extraction_dest: "home/{{ ansible_facts.user_id }}/.ssh/"
@@ -164,15 +159,21 @@ homebrew_installed_packages:
   - bash-completion
   - bitwarden-cli
   - cowsay
+  - docker
+  - docker-compose
   - dust
   - eksctl
   - fd
   - fish
   - fzf
   - git
+  - ghq
   - gnu-tar
   - golang
   - gpg
+  - jq
+  - kind
+  - kubectx
   - php
   - readline
   - ripgrep
@@ -204,7 +205,13 @@ homebrew_cask_apps:
   - font-hack-nerd-font
   - google-chrome
   - handbrake
+  - kitty
   - licecap
+  - name: openaudible
+    install_options: 'no-quarantine'
+  - phpstorm
+  - rectangle
+  - signal
   - slack
   - spotify
   - transmit
