@@ -138,7 +138,7 @@ asdf_plugins:
 directory_to_extract_from_archive: /home
 extract_archive: no
 extraction_destination: '~/archives'
-path_to_archive: '/Volumes/LaCie/home/tochukwuvictor/archived-system-backups/1615607321_XPS-13-9380-0338_backup.tar.gz'
+path_to_archive: '/Volumes/<your_external_drive_here>/<path_to_the_gzipped_tarball>'
 transfer_archive: yes
 transfer_instructions:
   prepend: []
